@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion : "2010-09-09"
 
-Description : 'Creating an EC2 instance with CloudFormation for Roman Numeral Case study'
+Description : 'Creating an EC2 instance with CloudFormation for Roman Numeral Project'
 
 Parameters: 
   
