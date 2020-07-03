@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion : "2010-09-09"
+
+Description : 'Creating an EC2 instance with CloudFormation for Roman Numeral Case study'
+
+Parameters: 
+  
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription : must be the name of an existing EC2 KeyPair.
+
+  LinuxAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+
+  # VPCId:
+  #   Description: VPC ID of the Lab VPC
+  #   Type: String
+
+  # VPCPublicSubnetId:
+  #   Description: Subnet ID of the public subnet within the Lab VPC
+  #   Type: String
+
+  InstanceType:
+    Description: Case study EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+    ConstraintDescription: must be a valid EC2 instance type.
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      NetworkInterfaces:
+        - DeviceIndex: 0
+          AssociatePublicIpAddress: true
+          SubnetId: subnet-f8b347d9
+          GroupSet:
+            - !Ref InstanceSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: !Ref LinuxAmiId
+      Tags: 
+        - Key: Name
+          Value: !Sub Web server of ${AWS::StackName} 
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y python3
+            pip3 install flask
+            cd /home/ec2-user
+            mkdir templates && cd templates
+            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/001-roman-numerals-converter/templates/index.html
+            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/001-roman-numerals-converter/templates/result.html
+            cd /home/ec2-user
+            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/001-roman-numerals-converter/app.py
+            python3 app.py
+
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP and SSH
+      VpcId: vpc-e618229c
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  PublicIp:
+    Description: Public IP address of the newly created EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
+      
+   
