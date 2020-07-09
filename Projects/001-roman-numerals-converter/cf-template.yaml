@@ -55,10 +55,10 @@ Resources:
             pip3 install flask
             cd /home/ec2-user
             mkdir templates && cd templates
-            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/001-roman-numerals-converter/templates/index.html
-            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/001-roman-numerals-converter/templates/result.html
+            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/001-roman-numerals-converter/templates/index.html
+            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/001-roman-numerals-converter/templates/result.html
             cd /home/ec2-user
-            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/001-roman-numerals-converter/app.py
+            wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/001-roman-numerals-converter/app.py
             python3 app.py
 
 
