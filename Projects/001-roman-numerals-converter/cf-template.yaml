@@ -3,45 +3,22 @@ AWSTemplateFormatVersion : "2010-09-09"
 Description : 'Creating an EC2 instance with CloudFormation for Roman Numeral Project'
 
 Parameters: 
-  
-  KeyName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
-    Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription : must be the name of an existing EC2 KeyPair.
 
   LinuxAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
 
-  # VPCId:
-  #   Description: VPC ID of the Lab VPC
-  #   Type: String
-
-  # VPCPublicSubnetId:
-  #   Description: Subnet ID of the public subnet within the Lab VPC
-  #   Type: String
-
-  InstanceType:
-    Description: Case study EC2 instance type
-    Type: String
-    Default: t2.micro
-    AllowedValues:
-      - t1.micro
-      - t2.micro
-    ConstraintDescription: must be a valid EC2 instance type.
-
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: !Ref InstanceType
+      InstanceType: t2.micro
       NetworkInterfaces:
         - DeviceIndex: 0
           AssociatePublicIpAddress: true
           SubnetId: subnet-f8b347d9
           GroupSet:
             - !Ref InstanceSecurityGroup
-      KeyName: !Ref KeyName
       ImageId: !Ref LinuxAmiId
       Tags: 
         - Key: Name
@@ -71,10 +48,6 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
           CidrIp: 0.0.0.0/0
 
 Outputs:
