@@ -32,6 +32,17 @@
         .footnote {
             color: rgba(0, 0, 255, 0.712);
         }
+        button {
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        padding: 16px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        opacity: 0.9;
+        }
     </style>
 </head>
 
@@ -45,9 +56,15 @@
 
     <h3><b>Result:</b></h3>
     <p>Milliseconds of <span class="result"> <b> {{ milliseconds }}</b> </span>equals to <span class="result"><b>{{ result }}</b></span>.</p><br><br>
-<form>
- <center><input type="button" value="Enter another time in milliseconds to convert" onclick="history.back()"></center>
-</form>
+
+    <button onclick="goBack()">Try another one!</button>
+
+<script>
+function goBack() {
+  window.history.back();
+}
+</script>
+
 
     <p class="footnote"><i>This app is developed in Python by <b>{{ developer_name }}</b> and deployed with Flask on AWS
             EC2 Instance using AWS Clouldformation Service.</i></p>
