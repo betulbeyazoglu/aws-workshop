@@ -3,7 +3,6 @@ from flask import Flask, request, render_template
 app = Flask(__name__)
 
 developer_name="Betul Beyazoglu"
-not_valid=False
 
 @app.route('/', methods=['GET'])
 def index():
