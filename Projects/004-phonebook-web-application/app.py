@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-app.config['MYSQL_DATABASE_HOST'] = os.getenv("DB_HOST", "bbphonebookapp.cdl8izlywybk.us-east-1.rds.amazonaws.com")
+app.config['MYSQL_DATABASE_HOST'] = "bbphonebookapp.cdl8izlywybk.us-east-1.rds.amazonaws.com"  #os.getenv("DB_HOST", "bbphonebookapp.cdl8izlywybk.us-east-1.rds.amazonaws.com")
 app.config['MYSQL_DATABASE_USER'] = 'admin'
 app.config['MYSQL_DATABASE_PASSWORD'] ='12345678'
 app.config['MYSQL_DATABASE_DB'] = 'phonebook'
@@ -160,5 +160,5 @@ def delete_contact():
 
 if __name__=='__main__':
     init_pb_db()
-    app.run(host='0.0.0.0', port=80)
-    #app.run(debug=True)
+    #app.run(host='0.0.0.0', port=80)
+    app.run(debug=True)
