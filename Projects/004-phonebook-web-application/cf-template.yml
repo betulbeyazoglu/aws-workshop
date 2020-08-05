@@ -89,9 +89,9 @@ Resources:
           - subnet-3a49a265
           - subnet-db0eb096
 
-      # UpdatePolicy:
-      #   AutoScalingReplacingUpdate:
-      #     WillReplace: True
+      UpdatePolicy:
+        AutoScalingReplacingUpdate:
+          WillReplace: True
   
   MyLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
@@ -116,13 +116,14 @@ Resources:
               pip3 install flask
               pip3 install flask_mysql
               export DB_HOST="${MySqlDatabase.Endpoint.Address}"
+              export DB_PORT="{MySqlDatabase.Port}"
               cd /home/ec2-user
               mkdir templates && cd templates
-              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/add-update.html?token=AOMT7AU5Y5KRENAIPPK5IFK7FKZRM              
-              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/delete.html?token=AOMT7AWOMCDOVXW3I3JZUPS7FKZ26              
-              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/index.html?token=AOMT7AQTDG3TDFYWSBHTJLC7FKZY4
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/add-update.html             
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/delete.html             
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/index.html
               cd /home/ec2-user
-              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/app.py?token=AOMT7AVLFV36BBMDJHCMPMS7FKZMA              
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/app.py             
               python3 app.py
 
   MySqlDatabase:
@@ -142,15 +143,13 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub RDS instance of ${AWS::StackName}
-      VPCSecurityGroups: 
-        - !GetAtt InstanceSecurityGroup.GroupId
+      # VPCSecurityGroups: 
+      #   - !GetAtt InstanceSecurityGroup.GroupId
 Outputs:
   WebsiteURL:
     Value: !GetAtt ApplicationLoadBalancer.DNSName
     Description: The DNS name of Application Load Balancer
-  DBendpoint:
-    Value: !GetAtt MySqlDatabase.Endpoint.Address
-    Description: The enddpoint of RDS Instance
+
    
 
 
