@@ -18,7 +18,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: vpc-e618229c
-      GroupDescription: Enable HTTP
+      GroupDescription: Enable HTTP, SSH and MYSQL/Aurora
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -27,6 +27,10 @@ Resources:
         - IpProtocol: tcp
           FromPort: 3306
           ToPort: 3306
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
           CidrIp: 0.0.0.0/0
 
   ApplicationLoadBalancer : 
@@ -95,6 +99,7 @@ Resources:
       LaunchTemplateData:
         InstanceType: t2.micro
         ImageId: ami-02354e95b39ca8dec
+        KeyName: betul.pem
         SecurityGroupIds: 
           - !Ref InstanceSecurityGroup 
         TagSpecifications:
@@ -113,10 +118,11 @@ Resources:
               export DB_HOST="${MySqlDatabase.Endpoint.Address}"
               cd /home/ec2-user
               mkdir templates && cd templates
-              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/002-milliseconds-converter/templates/index.html
-              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/002-milliseconds-converter/templates/result.html
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/add-update.html?token=AOMT7AU5Y5KRENAIPPK5IFK7FKZRM              
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/delete.html?token=AOMT7AWOMCDOVXW3I3JZUPS7FKZ26              
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/index.html?token=AOMT7AQTDG3TDFYWSBHTJLC7FKZY4
               cd /home/ec2-user
-              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/002-milliseconds-converter/app.py
+              wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/app.py?token=AOMT7AVLFV36BBMDJHCMPMS7FKZMA              
               python3 app.py
 
   MySqlDatabase:
