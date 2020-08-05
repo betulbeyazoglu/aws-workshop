@@ -116,7 +116,6 @@ Resources:
               pip3 install flask
               pip3 install flask_mysql
               export DB_HOST="${MySqlDatabase.Endpoint.Address}"
-              export DB_PORT="{MySqlDatabase.Port}"
               cd /home/ec2-user
               mkdir templates && cd templates
               wget https://raw.githubusercontent.com/betulbeyazoglu/aws-workshop/master/Projects/004-phonebook-web-application/templates/add-update.html             
