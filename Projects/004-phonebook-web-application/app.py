@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-app.config['MYSQL_DATABASE_HOST'] = os.getenv("DB_HOST", "bbphonebookapp.cdl8izlywybk.us-east-1.rds.amazonaws.com") 
+app.config['MYSQL_DATABASE_HOST'] = os.getenv("DB_HOST")#, "bbphonebookapp.cdl8izlywybk.us-east-1.rds.amazonaws.com") 
 app.config['MYSQL_DATABASE_USER'] = 'admin'
 app.config['MYSQL_DATABASE_PASSWORD'] ='12345678'
 app.config['MYSQL_DATABASE_DB'] = 'phonebook'
@@ -109,7 +109,7 @@ def delete(name):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method=='POST':
-        name=request.form['username']
+        name=request.form['username'].strip()
         persons=find_number(name)
         return render_template("index.html", developer_name="Betul Beyazoglu", persons=persons, show_result=True, keyword=name )
     else:
@@ -118,7 +118,7 @@ def index():
 @app.route('/add', methods=['GET','POST'])
 def add():
     if request.method=='POST':
-        name=request.form['username'].title()
+        name=request.form['username'].title().strip()
         number=request.form['phonenumber']
         if (name.replace(" ", "")).isalpha() and number.isdigit():
             result=add_number(name, number)
@@ -142,14 +142,30 @@ def update_number():
         name=request.form['username'].title()
         number=request.form['phonenumber']
         result=update(name, number)
-        return render_template("add-update.html", developer_name='Betul Beyazoglu', action_name="update phonebook", result=result, show_result=True)
+        if (name.replace(" ", "")).isalpha() and number.isdigit():
+            result=add_number(name, number)
+            return render_template("add-update.html", developer_name='Betul Beyazoglu', action_name="add phonebook", result=result, show_result=True)
+        elif name==" ":
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name can not be empty")    
+        elif name.isdigit():
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name of person should be text")    
+        elif not (name.replace(" ", "")).isalpha():
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name of person should be text")    
+        elif number==" ":
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Number can not be empty")    
+        elif not number.isdigit():
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Phone number should be in numeric format")       
     else:
-        return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="update phonebook", show_result=False)  
+        return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", show_result=False)  
+        
+    #     return render_template("add-update.html", developer_name='Betul Beyazoglu', action_name="update phonebook", result=result, show_result=True)
+    # else:
+    #     return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="update phonebook", show_result=False)  
     
 @app.route('/delete', methods=['GET','POST']) 
 def delete_contact():
     if request.method=='POST':
-        name=request.form['username'].title()
+        name=request.form['username'].title().strip()
         result=delete(name)
         if result==None:
             return render_template("delete.html", developer_name="Betul Beyazoglu", not_valid=True, message=f"There isn't any contact with name {name} in the phonebook")
@@ -160,5 +176,5 @@ def delete_contact():
 
 if __name__=='__main__':
     init_pb_db()
-    app.run(host='0.0.0.0', port=80)
-    #app.run(debug=True)
+    #app.run(host='0.0.0.0', port=80)
+    app.run(debug=True)
