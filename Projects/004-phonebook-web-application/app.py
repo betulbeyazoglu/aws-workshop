@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-app.config['MYSQL_DATABASE_HOST'] = os.getenv("DB_HOST")#, "bbphonebookapp.cdl8izlywybk.us-east-1.rds.amazonaws.com") 
+app.config['MYSQL_DATABASE_HOST'] = os.getenv("DB_HOST", "bbphonebookapp.cdl8izlywybk.us-east-1.rds.amazonaws.com") 
 app.config['MYSQL_DATABASE_USER'] = 'admin'
 app.config['MYSQL_DATABASE_PASSWORD'] ='12345678'
 app.config['MYSQL_DATABASE_DB'] = 'phonebook'
@@ -12,31 +12,31 @@ app.config['MYSQL_DATABASE_PORT'] = 3306
 
 mysql = MySQL()
 mysql.init_app(app)
-
 connection = mysql.connect()
 connection.autocommit(True)
 cursor = connection.cursor()
 
-def init_pb_db():
-    drop_table='DROP TABLE IF EXISTS phonebook.persons;'
-    pb_table="""
-    CREATE TABLE persons (
-    id int NOT NULL AUTO_INCREMENT,
-    name varchar(255) NOT NULL,
-    number varchar(255) NOT NULL,
-    PRIMARY KEY (ID)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    """
-    data = """
-    INSERT INTO phonebook.persons(name,number) 
-    VALUES 
-        ("Ammy Franky", "5714356782" ),
-        ("Betty Smart", "5647839201"),
-        ("Jhony Drift", "2347654839");
-    """
-    cursor.execute(drop_table)
-    cursor.execute(pb_table)
-    cursor.execute(data)
+#will run it locally in init-pb-db.py
+# def init_pb_db():
+#     drop_table='DROP TABLE IF EXISTS phonebook.persons;'
+#     pb_table="""
+#     CREATE TABLE persons (
+#     id int NOT NULL AUTO_INCREMENT,
+#     name varchar(255) NOT NULL,
+#     number varchar(255) NOT NULL,
+#     PRIMARY KEY (ID)
+#     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+#     """
+#     data = """
+#     INSERT INTO phonebook.persons(name,number) 
+#     VALUES 
+#         ("Ammy Franky", "5714356782" ),
+#         ("Betty Smart", "5647839201"),
+#         ("Jhony Drift", "2347654839");
+#     """
+#     cursor.execute(drop_table)
+#     cursor.execute(pb_table)
+#     cursor.execute(data)
     
 def find_number(keyword):
     query = f"""
@@ -123,7 +123,7 @@ def add():
         if (name.replace(" ", "")).isalpha() and number.isdigit():
             result=add_number(name, number)
             return render_template("add-update.html", developer_name='Betul Beyazoglu', action_name="add phonebook", result=result, show_result=True)
-        elif name==" ":
+        elif name is None or name.strip()=="":
             return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name can not be empty")    
         elif name.isdigit():
             return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name of person should be text")    
@@ -141,40 +141,30 @@ def update_number():
     if request.method=='POST':
         name=request.form['username'].title()
         number=request.form['phonenumber']
-        result=update(name, number)
         if (name.replace(" ", "")).isalpha() and number.isdigit():
-            result=add_number(name, number)
-            return render_template("add-update.html", developer_name='Betul Beyazoglu', action_name="add phonebook", result=result, show_result=True)
+            result=update(name, number)
+            return render_template("add-update.html", developer_name='Betul Beyazoglu', action_name="update phonebook", result=result, show_result=True)
         elif name==" ":
-            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name can not be empty")    
-        elif name.isdigit():
-            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name of person should be text")    
-        elif not (name.replace(" ", "")).isalpha():
-            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Name of person should be text")    
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="update phonebook", not_valid=True, message="Name can not be empty")    
         elif number==" ":
-            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Number can not be empty")    
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="update phonebook", not_valid=True, message="Number can not be empty")    
         elif not number.isdigit():
-            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", not_valid=True, message="Phone number should be in numeric format")       
+            return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="update phonebook", not_valid=True, message="Phone number should be in numeric format")       
     else:
-        return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="add phonebook", show_result=False)  
+        return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="update phonebook", show_result=False)  
         
-    #     return render_template("add-update.html", developer_name='Betul Beyazoglu', action_name="update phonebook", result=result, show_result=True)
-    # else:
-    #     return render_template("add-update.html", developer_name="Betul Beyazoglu", action_name="update phonebook", show_result=False)  
-    
 @app.route('/delete', methods=['GET','POST']) 
 def delete_contact():
     if request.method=='POST':
         name=request.form['username'].title().strip()
+        if name=="" or name is None:
+            return render_template("delete.html", developer_name="Betul Beyazoglu", not_valid=True, message="Name can not be empty")    
         result=delete(name)
-        if result==None:
-            return render_template("delete.html", developer_name="Betul Beyazoglu", not_valid=True, message=f"There isn't any contact with name {name} in the phonebook")
-        else:
-            return render_template("delete.html", developer_name="Betul Beyazoglu", show_result=True, result=result)
+        return render_template("delete.html", developer_name="Betul Beyazoglu", show_result=True, result=result)
     else:
         return render_template("delete.html", developer_name="Betul Beyazoglu", show_result=False)  
 
 if __name__=='__main__':
-    init_pb_db()
+    # init_pb_db()
     app.run(host='0.0.0.0', port=80)
-    #app.run(debug=True)
+    # app.run(debug=True)
