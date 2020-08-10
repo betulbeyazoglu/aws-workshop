@@ -7,7 +7,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: vpc-e618229c
-      GroupDescription: Enable HTTP
+      GroupDescription: Enable HTTP for ALB
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -18,16 +18,12 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: vpc-e618229c
-      GroupDescription: Enable HTTP, SSH and MYSQL/Aurora
+      GroupDescription: Enable HTTP, SSH 
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
           SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
@@ -36,6 +32,8 @@ Resources:
   ApplicationLoadBalancer : 
       Type : AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties : 
+        IpAddressType: ipv4
+        Scheme: internet-facing
         SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
         Subnets: 
@@ -62,10 +60,11 @@ Resources:
     Properties : 
       HealthCheckIntervalSeconds : 30
       HealthCheckTimeoutSeconds : 5
-      HealthyThresholdCount : 3
+      HealthyThresholdCount : 2
       Port : 80
       Protocol : HTTP
-      UnhealthyThresholdCount : 5
+      TargetType: instance
+      UnhealthyThresholdCount : 3
       VpcId : vpc-e618229c 
 
   AutoScalingGroup:
@@ -79,15 +78,10 @@ Resources:
         MaxSize: 3
         MinSize: 1
         DesiredCapacity: 2
-        HealthCheckGracePeriod: 90
+        HealthCheckGracePeriod: 300
         HealthCheckType: ELB
-        VPCZoneIdentifier:
-          - subnet-f8b347d9
-          - subnet-4751f149
-          - subnet-fe774ac0
-          - subnet-01c02e67
-          - subnet-3a49a265
-          - subnet-db0eb096
+        AvailabilityZones:
+          !GetAZs ""
 
       UpdatePolicy:
         AutoScalingReplacingUpdate:
@@ -128,6 +122,9 @@ Resources:
   MySqlDatabase:
     Type: "AWS::RDS::DBInstance"
     Properties:
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: 0
       DBInstanceClass: db.t2.micro #required
       DBInstanceIdentifier: phonebookapp-db
       DBName: phonebook
@@ -135,9 +132,12 @@ Resources:
       EngineVersion: 8.0.19
       StorageType: gp2
       AllocatedStorage: 20
+      DeletionProtection: false
       MasterUserPassword: 12345678
       MasterUsername: admin
       Port: 3306
+      MonitoringInterval: 0
+      MultiAZ: false
       PubliclyAccessible: true
       Tags:
         - Key: Name

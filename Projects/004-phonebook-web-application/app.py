@@ -16,7 +16,8 @@ connection = mysql.connect()
 connection.autocommit(True)
 cursor = connection.cursor()
 
-#will run it locally in init-pb-db.py
+#this function will run it locally in init-pb-db.py
+
 # def init_pb_db():
 #     drop_table='DROP TABLE IF EXISTS phonebook.persons;'
 #     pb_table="""
