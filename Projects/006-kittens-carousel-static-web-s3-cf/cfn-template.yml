@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'This CloudFormation template creates S3 buckets, configure ACM Certificate, Cloudfront and Route 53 record set for hosting a Static Website' 
+Parameters:
+
+  DomainName:
+    Description: The DNS name of an existing Amazon Route 53 hosted zone
+    Type: String
+    Default: bb4it.me 
+    
+  FullDomainName:
+    Description: Domain name of the static website
+    Type: String
+    Default: carouselof.bb4it.me 
+
+
+Resources:
+ 
+  bb4itBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref 'FullDomainName'
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+
+  bb4itBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref 'bb4itBucket' #required
+      PolicyDocument:    #required
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: s3:GetObject
+            Principal: '*'
+            Resource: !Sub '${bb4itBucket.Arn}/*' # !Sub 'arn:aws:s3:::${bb4itBucket}/*'
+ 
+
+  Certificate:
+    Type: 'AWS::CertificateManager::Certificate'
+    Properties:
+      CertificateTransparencyLoggingPreference: DISABLED
+      DomainName: !Ref FullDomainName #required
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref FullDomainName
+          HostedZoneId: Z08821781XTRX7EQMQWGF
+  
+
+  CloudFrontOriginAccessIdentity:
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Ref bb4itBucket
+
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases: 
+          - !Ref 'FullDomainName'
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 60
+            ErrorCode: 403 # not found
+            ResponseCode: 404
+            ResponsePagePath: '/index.html'
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          DefaultTTL: 3600
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: true
+          MaxTTL: 86400
+          MinTTL: 60
+          SmoothStreaming: false
+          TargetOriginId: !Sub 'S3-${AWS::StackName}-root' 
+          ViewerProtocolPolicy: 'allow-all'   ############## redirect-to-https
+        DefaultRootObject: 'index.html'
+        Enabled: true
+        HttpVersion: http2
+        IPV6Enabled: true
+        Origins:
+          - CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginKeepaliveTimeout: 5
+              OriginProtocolPolicy: 'http-only' #i changed from https to http ############3
+              OriginReadTimeout: 60
+              OriginSSLProtocols:
+                - TLSv1
+                - TLSv1.1
+                - TLSv1.2
+            DomainName: !GetAtt 'bb4itBucket.DomainName'  #!Select [2, !Split ["/", !GetAtt bb4itBucket.WebsiteURL]]  
+            Id: !Sub 'S3-${AWS::StackName}-root'
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref Certificate  
+          MinimumProtocolVersion: TLSv1.1_2016
+          SslSupportMethod: sni-only
+
+
+  Route53:
+    Type: AWS::Route53::RecordSetGroup
+    DependsOn: CloudFrontDistribution
+    Properties:
+      HostedZoneName: !Sub '${DomainName}.'   #!Join ['', [!Ref 'DomainName', .]]
+      RecordSets:
+      - Name: !Ref 'FullDomainName'
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt CloudFrontDistribution.DomainName
+          EvaluateTargetHealth: false
+          HostedZoneId: Z2FDTNDATAQYW2
+     
+
+Outputs:
+
+  BucketName:
+    Value: !Ref 'bb4itBucket'
+    Description: Name of S3 bucket to hold website content
+  CloudfrontEndpoint:
+    Value: !GetAtt [CloudFrontDistribution, DomainName]
+    Description: Endpoint for Cloudfront distribution
+  FullDomain:
+    Value: !Ref 'FullDomainName'
+    Description: Full DomainName
+
+
+
+
+
+  
