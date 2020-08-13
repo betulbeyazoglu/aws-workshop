@@ -11,6 +11,11 @@ Parameters:
     Description: Domain name of the static website
     Type: String
     Default: carouselof.bb4it.me 
+  
+  ACMCertificateIdentifier:
+    Description: The AWS Certificate Manager (ACM) certificate identifier.
+    Type: String
+    Default: 'arn:aws:acm:us-east-1:375516740190:certificate/9395e702-97c4-417e-a3a2-5ea31fdcb417'
 
 
 Resources:
@@ -38,15 +43,15 @@ Resources:
             Resource: !Sub '${bb4itBucket.Arn}/*' # !Sub 'arn:aws:s3:::${bb4itBucket}/*'
  
 
-  Certificate:
-    Type: 'AWS::CertificateManager::Certificate'
-    Properties:
-      CertificateTransparencyLoggingPreference: DISABLED
-      DomainName: !Ref FullDomainName #required
-      ValidationMethod: DNS
-      DomainValidationOptions:
-        - DomainName: !Ref FullDomainName
-          HostedZoneId: Z08821781XTRX7EQMQWGF
+  # Certificate:
+  #   Type: 'AWS::CertificateManager::Certificate'
+  #   Properties:
+  #     CertificateTransparencyLoggingPreference: DISABLED
+  #     DomainName: !Ref FullDomainName #required
+  #     ValidationMethod: DNS
+  #     DomainValidationOptions:
+  #       - DomainName: !Ref FullDomainName
+  #         HostedZoneId: Z08821781XTRX7EQMQWGF
   
 
   CloudFrontOriginAccessIdentity:
@@ -84,7 +89,7 @@ Resources:
           MinTTL: 60
           SmoothStreaming: false
           TargetOriginId: !Sub 'S3-${AWS::StackName}-root' 
-          ViewerProtocolPolicy: 'allow-all'   ############## redirect-to-https
+          ViewerProtocolPolicy: 'redirect-to-https'   ############## 'allow-all'
         DefaultRootObject: 'index.html'
         Enabled: true
         HttpVersion: http2
@@ -104,7 +109,7 @@ Resources:
             Id: !Sub 'S3-${AWS::StackName}-root'
         PriceClass: PriceClass_All
         ViewerCertificate:
-          AcmCertificateArn: !Ref Certificate  
+          AcmCertificateArn: !Ref ACMCertificateIdentifier  #!Ref Certificate  
           MinimumProtocolVersion: TLSv1.1_2016
           SslSupportMethod: sni-only
 
