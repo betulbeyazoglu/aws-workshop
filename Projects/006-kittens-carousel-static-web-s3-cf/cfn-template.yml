@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'This CloudFormation template creates S3 buckets, configures ACM Certificate, Cloudfront and Route 53 record set for hosting a Static Website' 
+Description: 'This CloudFormation template creates S3 bucket, configures Cloudfront and Route 53 record set for hosting a Static Website' 
 Parameters:
 
   DomainName:
